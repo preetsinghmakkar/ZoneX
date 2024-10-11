@@ -1,3 +1,5 @@
-## ZoneX
+# Solana TrustLock - Decentralized Exchange
 
-### UnderDevelopment.....
+## Project Status
+
+- **Current Phase**: Under development
