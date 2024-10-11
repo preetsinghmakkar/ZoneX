@@ -1,4 +1,4 @@
-# Solana TrustLock - Decentralized Exchange
+# ZoneX - Decentralized Exchange
 
 ## Project Status
 
