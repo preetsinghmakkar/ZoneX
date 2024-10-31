@@ -24,9 +24,17 @@ contract ZoneXManager {
 
     function swap(
         address poolAddress_,
+        bool zeroForOne,
+        uint256 amountSpecified,
         bytes calldata data
     ) public returns (int256, int256) {
-        return ZoneXPool(poolAddress_).swap(msg.sender, data);
+        return
+            ZoneXPool(poolAddress_).swap(
+                msg.sender,
+                zeroForOne,
+                amountSpecified,
+                data
+            );
     }
 
     function zoneXMintCallback(
