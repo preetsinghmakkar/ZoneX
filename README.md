@@ -92,7 +92,7 @@ ZoneX leverages Uniswap V3-inspired mechanics with added optimizations for fee c
 
 ## Learning Resources
 
-ZoneX was developed with foundational concepts from the (Uniswap V3 book)[https://uniswapv3book.com/], incorporating Uniswap’s advanced AMM model, tick management, and efficient fee structures to create an optimized DEX solution.
+ZoneX was developed with foundational concepts from the [Uniswap V3 book](https://uniswapv3book.com/), incorporating Uniswap’s advanced AMM model, tick management, and efficient fee structures to create an optimized DEX solution.
 
 ## Contributing
 
