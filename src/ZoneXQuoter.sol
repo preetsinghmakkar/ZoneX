@@ -99,7 +99,7 @@ contract ZoneXQuoter {
         }
     }
 
-    function ZoneXSwapCallback(
+    function zoneXSwapCallback(
         int256 amount0Delta,
         int256 amount1Delta,
         bytes memory data
