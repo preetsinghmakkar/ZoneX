@@ -4,4 +4,4 @@ out = "out"
 libs = ["lib"]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
-remappings = ["forge-std/=lib/forge-std/src/", "ds-test/=lib/forge-std/lib/ds-test/src/", "prb-math/=lib/prb-math/contracts/"]
+remappings = ["forge-std/=lib/forge-std/src/", "ds-test/=lib/forge-std/lib/ds-test/src/", "prb-math/=lib/prb-math/contracts/", "abdk-math/=lib/abdk-libraries-solidity/", "bytes-utils/=lib/solidity-bytes-utils/contracts/"]

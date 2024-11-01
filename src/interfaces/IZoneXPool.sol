@@ -2,14 +2,59 @@
 pragma solidity ^0.8.14;
 
 interface IZoneXPool {
-    function slot0() external view returns (uint160 sqrtPriceX96, int24 tick);
+    struct CallbackData {
+        address token0;
+        address token1;
+        address payer;
+    }
 
-    // @param - zeroForOne is the flag that controls swap direction: when true, token0 is traded in for token1; when false, it’s the opposite.
-    // @param - amountSpecified is the number of tokens the user wants to sell.
+    function slot0()
+        external
+        view
+        returns (
+            uint160 sqrtPriceX96,
+            int24 tick,
+            uint16 observationIndex,
+            uint16 observationCardinality,
+            uint16 observationCardinalityNext
+        );
+
+    function factory() external view returns (address);
+
+    function token0() external view returns (address);
+
+    function token1() external view returns (address);
+
+    function tickSpacing() external view returns (uint24);
+
+    function fee() external view returns (uint24);
+
+    function positions(
+        bytes32 key
+    )
+        external
+        view
+        returns (
+            uint128 liquidity,
+            uint256 feeGrowthInside0LastX128,
+            uint256 feeGrowthInside1LastX128,
+            uint128 tokensOwed0,
+            uint128 tokensOwed1
+        );
+
+    function mint(
+        address owner,
+        int24 lowerTick,
+        int24 upperTick,
+        uint128 amount,
+        bytes calldata data
+    ) external returns (uint256 amount0, uint256 amount1);
+
     function swap(
         address recipient,
         bool zeroForOne,
         uint256 amountSpecified,
+        uint160 sqrtPriceLimitX96,
         bytes calldata data
     ) external returns (int256, int256);
 }
