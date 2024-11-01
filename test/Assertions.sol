@@ -16,7 +16,7 @@ abstract contract Assertions is Test {
         uint256[2] fees;
     }
 
-    function assertPoolState(ExpectedPoolState memory expected) internal {
+    function assertPoolState(ExpectedPoolState memory expected) internal view {
         (uint160 sqrtPriceX96, int24 currentTick, , , ) = expected.pool.slot0();
         assertEq(sqrtPriceX96, expected.sqrtPriceX96, "invalid current sqrtP");
         assertEq(currentTick, expected.tick, "invalid current tick");
@@ -47,7 +47,7 @@ abstract contract Assertions is Test {
         uint256 poolBalance1;
     }
 
-    function assertBalances(ExpectedBalances memory expected) internal {
+    function assertBalances(ExpectedBalances memory expected) internal view {
         assertEq(
             expected.tokens[0].balanceOf(address(this)),
             expected.userBalance0,
@@ -86,7 +86,7 @@ abstract contract Assertions is Test {
         int128 liquidityNet;
     }
 
-    function assertTick(ExpectedTick memory expected) internal {
+    function assertTick(ExpectedTick memory expected) internal view {
         (
             bool initialized,
             uint128 liquidityGross,
@@ -133,7 +133,9 @@ abstract contract Assertions is Test {
         bool initialized;
     }
 
-    function assertObservation(ExpectedObservation memory expected) internal {
+    function assertObservation(
+        ExpectedObservation memory expected
+    ) internal view {
         (uint32 timestamp, int56 tickCumulative, bool initialized) = expected
             .pool
             .observations(expected.index);
@@ -176,7 +178,7 @@ abstract contract Assertions is Test {
         ExpectedObservationShort observation;
     }
 
-    function assertMany(ExpectedMany memory expected) internal {
+    function assertMany(ExpectedMany memory expected) internal view {
         assertPoolState(
             ExpectedPoolState({
                 pool: expected.pool,
@@ -250,7 +252,7 @@ abstract contract Assertions is Test {
         uint256[2] poolBalances;
     }
 
-    function assertMany(ExpectedPoolAndBalances memory expected) internal {
+    function assertMany(ExpectedPoolAndBalances memory expected) internal view {
         assertPoolState(
             ExpectedPoolState({
                 pool: expected.pool,
@@ -280,7 +282,9 @@ abstract contract Assertions is Test {
         ExpectedTickShort[2] ticks;
     }
 
-    function assertMany(ExpectedPositionAndTicks memory expected) internal {
+    function assertMany(
+        ExpectedPositionAndTicks memory expected
+    ) internal view {
         assertPosition(
             ExpectedPosition({
                 pool: expected.pool,
@@ -327,7 +331,7 @@ abstract contract Assertions is Test {
         uint128[2] tokensOwed;
     }
 
-    function assertPosition(ExpectedPosition memory params) public {
+    function assertPosition(ExpectedPosition memory params) public view {
         bytes32 positionKey = keccak256(
             abi.encodePacked(address(this), params.ticks[0], params.ticks[1])
         );
