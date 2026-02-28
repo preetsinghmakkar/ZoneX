@@ -29,9 +29,7 @@ interface IZoneXPool {
 
     function fee() external view returns (uint24);
 
-    function positions(
-        bytes32 key
-    )
+    function positions(bytes32 key)
         external
         view
         returns (
@@ -42,13 +40,9 @@ interface IZoneXPool {
             uint128 tokensOwed1
         );
 
-    function mint(
-        address owner,
-        int24 lowerTick,
-        int24 upperTick,
-        uint128 amount,
-        bytes calldata data
-    ) external returns (uint256 amount0, uint256 amount1);
+    function mint(address owner, int24 lowerTick, int24 upperTick, uint128 amount, bytes calldata data)
+        external
+        returns (uint256 amount0, uint256 amount1);
 
     function swap(
         address recipient,

@@ -4,10 +4,7 @@ pragma solidity ^0.8.14;
 import "bytes-utils/BytesLib.sol";
 
 library BytesLibExt {
-    function toUint24(
-        bytes memory _bytes,
-        uint256 _start
-    ) internal pure returns (uint24) {
+    function toUint24(bytes memory _bytes, uint256 _start) internal pure returns (uint24) {
         require(_bytes.length >= _start + 3, "toUint24_outOfBounds");
         uint24 tempUint;
 
@@ -33,8 +30,7 @@ library Path {
     /// @dev The offset of an encoded pool key (tokenIn + fee + tokenOut)
     uint256 private constant POP_OFFSET = NEXT_OFFSET + ADDR_SIZE;
     /// @dev The minimum length of a path that contains 2 or more pools;
-    uint256 private constant MULTIPLE_POOLS_MIN_LENGTH =
-        POP_OFFSET + NEXT_OFFSET;
+    uint256 private constant MULTIPLE_POOLS_MIN_LENGTH = POP_OFFSET + NEXT_OFFSET;
 
     function hasMultiplePools(bytes memory path) internal pure returns (bool) {
         return path.length >= MULTIPLE_POOLS_MIN_LENGTH;
@@ -44,9 +40,7 @@ library Path {
         return (path.length - ADDR_SIZE) / NEXT_OFFSET;
     }
 
-    function getFirstPool(
-        bytes memory path
-    ) internal pure returns (bytes memory) {
+    function getFirstPool(bytes memory path) internal pure returns (bytes memory) {
         return path.slice(0, POP_OFFSET);
     }
 
@@ -54,9 +48,7 @@ library Path {
         return path.slice(NEXT_OFFSET, path.length - NEXT_OFFSET);
     }
 
-    function decodeFirstPool(
-        bytes memory path
-    ) internal pure returns (address tokenIn, address tokenOut, uint24 fee) {
+    function decodeFirstPool(bytes memory path) internal pure returns (address tokenIn, address tokenOut, uint24 fee) {
         tokenIn = path.toAddress(0);
         fee = path.toUint24(ADDR_SIZE);
         tokenOut = path.toAddress(NEXT_OFFSET);

@@ -10,53 +10,33 @@ contract ZoneXPoolFactory is IZoneXPoolDeployer {
     error TokensMustBeDifferent();
     error UnsupportedFee();
 
-    event PoolCreated(
-        address indexed token0,
-        address indexed token1,
-        uint24 indexed fee,
-        address pool
-    );
+    event PoolCreated(address indexed token0, address indexed token1, uint24 indexed fee, address pool);
 
     PoolParameters public parameters;
 
     mapping(uint24 => uint24) public fees;
-    mapping(address => mapping(address => mapping(uint24 => address)))
-        public pools;
+    mapping(address => mapping(address => mapping(uint24 => address))) public pools;
 
     constructor() {
         fees[500] = 10;
         fees[3000] = 60;
     }
 
-    function createPool(
-        address tokenX,
-        address tokenY,
-        uint24 fee
-    ) public returns (address pool) {
+    function createPool(address tokenX, address tokenY, uint24 fee) public returns (address pool) {
         if (tokenX == tokenY) revert TokensMustBeDifferent();
         if (fees[fee] == 0) revert UnsupportedFee();
 
-        (tokenX, tokenY) = tokenX < tokenY
-            ? (tokenX, tokenY)
-            : (tokenY, tokenX);
+        (tokenX, tokenY) = tokenX < tokenY ? (tokenX, tokenY) : (tokenY, tokenX);
 
         if (tokenX == address(0)) revert ZeroAddressNotAllowed();
-        if (pools[tokenX][tokenY][fee] != address(0))
+        if (pools[tokenX][tokenY][fee] != address(0)) {
             revert PoolAlreadyExists();
+        }
 
-        parameters = PoolParameters({
-            factory: address(this),
-            token0: tokenX,
-            token1: tokenY,
-            tickSpacing: fees[fee],
-            fee: fee
-        });
+        parameters =
+            PoolParameters({factory: address(this), token0: tokenX, token1: tokenY, tickSpacing: fees[fee], fee: fee});
 
-        pool = address(
-            new ZoneXPool{
-                salt: keccak256(abi.encodePacked(tokenX, tokenY, fee))
-            }()
-        );
+        pool = address(new ZoneXPool{salt: keccak256(abi.encodePacked(tokenX, tokenY, fee))}());
 
         delete parameters;
 

@@ -12,11 +12,7 @@ library Oracle {
         internal
         returns (uint16 cardinality, uint16 cardinalityNext)
     {
-        self[0] = Observation({
-            timestamp: time,
-            tickCumulative: 0,
-            initialized: true
-        });
+        self[0] = Observation({timestamp: time, tickCumulative: 0, initialized: true});
 
         cardinality = 1;
         cardinalityNext = 1;
@@ -44,11 +40,7 @@ library Oracle {
         self[indexUpdated] = transform(last, timestamp, tick);
     }
 
-    function grow(
-        Observation[65535] storage self,
-        uint16 current,
-        uint16 next
-    ) internal returns (uint16) {
+    function grow(Observation[65535] storage self, uint16 current, uint16 next) internal returns (uint16) {
         if (next <= current) return current;
 
         for (uint16 i = current; i < next; i++) {
@@ -58,44 +50,31 @@ library Oracle {
         return next;
     }
 
-    function transform(
-        Observation memory last,
-        uint32 timestamp,
-        int24 tick
-    ) internal pure returns (Observation memory) {
+    function transform(Observation memory last, uint32 timestamp, int24 tick)
+        internal
+        pure
+        returns (Observation memory)
+    {
         uint56 delta = timestamp - last.timestamp;
 
-        return
-            Observation({
-                timestamp: timestamp,
-                tickCumulative: last.tickCumulative +
-                    int56(tick) *
-                    int56(delta),
-                initialized: true
-            });
+        return Observation({
+            timestamp: timestamp,
+            tickCumulative: last.tickCumulative + int56(tick) * int56(delta),
+            initialized: true
+        });
     }
 
-    function lte(
-        uint32 time,
-        uint32 a,
-        uint32 b
-    ) private pure returns (bool) {
+    function lte(uint32 time, uint32 a, uint32 b) private pure returns (bool) {
         // if there hasn't been overflow, no need to adjust
         if (a <= time && b <= time) return a <= b;
 
-        uint256 aAdjusted = a > time ? a : a + 2**32;
-        uint256 bAdjusted = b > time ? b : b + 2**32;
+        uint256 aAdjusted = a > time ? a : a + 2 ** 32;
+        uint256 bAdjusted = b > time ? b : b + 2 ** 32;
 
         return aAdjusted <= bAdjusted;
     }
 
-    function binarySearch(
-        Observation[65535] storage self,
-        uint32 time,
-        uint32 target,
-        uint16 index,
-        uint16 cardinality
-    )
+    function binarySearch(Observation[65535] storage self, uint32 time, uint32 target, uint16 index, uint16 cardinality)
         private
         view
         returns (Observation memory beforeOrAt, Observation memory atOrAfter)
@@ -117,8 +96,9 @@ library Oracle {
 
             bool targetAtOrAfter = lte(time, beforeOrAt.timestamp, target);
 
-            if (targetAtOrAfter && lte(time, target, atOrAfter.timestamp))
+            if (targetAtOrAfter && lte(time, target, atOrAfter.timestamp)) {
                 break;
+            }
 
             if (!targetAtOrAfter) r = i - 1;
             else l = i + 1;
@@ -132,11 +112,7 @@ library Oracle {
         int24 tick,
         uint16 index,
         uint16 cardinality
-    )
-        private
-        view
-        returns (Observation memory beforeOrAt, Observation memory atOrAfter)
-    {
+    ) private view returns (Observation memory beforeOrAt, Observation memory atOrAfter) {
         beforeOrAt = self[index];
 
         // if target is at of after the last observation
@@ -174,17 +150,8 @@ library Oracle {
 
         uint32 target = time - secondsAgo;
 
-        (
-            Observation memory beforeOrAt,
-            Observation memory atOrAfter
-        ) = getSurroundingObservations(
-                self,
-                time,
-                target,
-                tick,
-                index,
-                cardinality
-            );
+        (Observation memory beforeOrAt, Observation memory atOrAfter) =
+            getSurroundingObservations(self, time, target, tick, index, cardinality);
 
         if (target == beforeOrAt.timestamp) {
             // we're at the left boundary
@@ -194,14 +161,11 @@ library Oracle {
             return atOrAfter.tickCumulative;
         } else {
             // we're in the middle
-            uint56 observationTimeDelta = atOrAfter.timestamp -
-                beforeOrAt.timestamp;
+            uint56 observationTimeDelta = atOrAfter.timestamp - beforeOrAt.timestamp;
             uint56 targetDelta = target - beforeOrAt.timestamp;
-            return
-                beforeOrAt.tickCumulative +
-                ((atOrAfter.tickCumulative - beforeOrAt.tickCumulative) /
-                    int56(observationTimeDelta)) *
-                int56(targetDelta);
+            return beforeOrAt.tickCumulative
+                + ((atOrAfter.tickCumulative - beforeOrAt.tickCumulative) / int56(observationTimeDelta))
+                    * int56(targetDelta);
         }
     }
 
@@ -216,14 +180,7 @@ library Oracle {
         tickCumulatives = new int56[](secondsAgos.length);
 
         for (uint256 i = 0; i < secondsAgos.length; i++) {
-            tickCumulatives[i] = observeSingle(
-                self,
-                time,
-                secondsAgos[i],
-                tick,
-                index,
-                cardinality
-            );
+            tickCumulatives[i] = observeSingle(self, time, secondsAgos[i], tick, index, cardinality);
         }
     }
 }

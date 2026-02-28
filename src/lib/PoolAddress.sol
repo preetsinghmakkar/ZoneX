@@ -4,12 +4,11 @@ pragma solidity ^0.8.14;
 import "../ZoneXPool.sol";
 
 library PoolAddress {
-    function computeAddress(
-        address factory,
-        address token0,
-        address token1,
-        uint24 fee
-    ) internal pure returns (address pool) {
+    function computeAddress(address factory, address token0, address token1, uint24 fee)
+        internal
+        pure
+        returns (address pool)
+    {
         require(token0 < token1);
 
         pool = address(

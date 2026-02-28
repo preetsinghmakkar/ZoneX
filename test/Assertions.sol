@@ -17,25 +17,13 @@ abstract contract Assertions is Test {
     }
 
     function assertPoolState(ExpectedPoolState memory expected) internal view {
-        (uint160 sqrtPriceX96, int24 currentTick, , , ) = expected.pool.slot0();
+        (uint160 sqrtPriceX96, int24 currentTick,,,) = expected.pool.slot0();
         assertEq(sqrtPriceX96, expected.sqrtPriceX96, "invalid current sqrtP");
         assertEq(currentTick, expected.tick, "invalid current tick");
-        assertEq(
-            expected.pool.liquidity(),
-            expected.liquidity,
-            "invalid current liquidity"
-        );
+        assertEq(expected.pool.liquidity(), expected.liquidity, "invalid current liquidity");
 
-        assertEq(
-            expected.pool.feeGrowthGlobal0X128(),
-            expected.fees[0],
-            "incorrect feeGrowthGlobal0X128"
-        );
-        assertEq(
-            expected.pool.feeGrowthGlobal1X128(),
-            expected.fees[1],
-            "incorrect feeGrowthGlobal1X128"
-        );
+        assertEq(expected.pool.feeGrowthGlobal0X128(), expected.fees[0], "incorrect feeGrowthGlobal0X128");
+        assertEq(expected.pool.feeGrowthGlobal1X128(), expected.fees[1], "incorrect feeGrowthGlobal1X128");
     }
 
     struct ExpectedBalances {
@@ -48,16 +36,8 @@ abstract contract Assertions is Test {
     }
 
     function assertBalances(ExpectedBalances memory expected) internal view {
-        assertEq(
-            expected.tokens[0].balanceOf(address(this)),
-            expected.userBalance0,
-            "incorrect token0 balance of user"
-        );
-        assertEq(
-            expected.tokens[1].balanceOf(address(this)),
-            expected.userBalance1,
-            "incorrect token1 balance of user"
-        );
+        assertEq(expected.tokens[0].balanceOf(address(this)), expected.userBalance0, "incorrect token0 balance of user");
+        assertEq(expected.tokens[1].balanceOf(address(this)), expected.userBalance1, "incorrect token1 balance of user");
 
         assertEq(
             expected.tokens[0].balanceOf(address(expected.pool)),
@@ -87,28 +67,10 @@ abstract contract Assertions is Test {
     }
 
     function assertTick(ExpectedTick memory expected) internal view {
-        (
-            bool initialized,
-            uint128 liquidityGross,
-            int128 liquidityNet,
-            ,
-
-        ) = expected.pool.ticks(expected.tick);
-        assertEq(
-            initialized,
-            expected.initialized,
-            "incorrect tick initialized state"
-        );
-        assertEq(
-            liquidityGross,
-            expected.liquidityGross,
-            "incorrect tick gross liquidity"
-        );
-        assertEq(
-            liquidityNet,
-            expected.liquidityNet,
-            "incorrect tick net liquidity"
-        );
+        (bool initialized, uint128 liquidityGross, int128 liquidityNet,,) = expected.pool.ticks(expected.tick);
+        assertEq(initialized, expected.initialized, "incorrect tick initialized state");
+        assertEq(liquidityGross, expected.liquidityGross, "incorrect tick gross liquidity");
+        assertEq(liquidityNet, expected.liquidityNet, "incorrect tick net liquidity");
 
         // TODO: fix, must be the same as 'initialized'
         // assertEq(
@@ -133,30 +95,14 @@ abstract contract Assertions is Test {
         bool initialized;
     }
 
-    function assertObservation(
-        ExpectedObservation memory expected
-    ) internal view {
-        (uint32 timestamp, int56 tickCumulative, bool initialized) = expected
-            .pool
-            .observations(expected.index);
+    function assertObservation(ExpectedObservation memory expected) internal view {
+        (uint32 timestamp, int56 tickCumulative, bool initialized) = expected.pool.observations(expected.index);
 
-        assertEq(
-            timestamp,
-            expected.timestamp,
-            "incorrect observation timestamp"
-        );
+        assertEq(timestamp, expected.timestamp, "incorrect observation timestamp");
 
-        assertEq(
-            tickCumulative,
-            expected.tickCumulative,
-            "incorrect observation cumulative tick"
-        );
+        assertEq(tickCumulative, expected.tickCumulative, "incorrect observation cumulative tick");
 
-        assertEq(
-            initialized,
-            expected.initialized,
-            "incorrect observation initialization state"
-        );
+        assertEq(initialized, expected.initialized, "incorrect observation initialization state");
     }
 
     struct ExpectedMany {
@@ -282,9 +228,7 @@ abstract contract Assertions is Test {
         ExpectedTickShort[2] ticks;
     }
 
-    function assertMany(
-        ExpectedPositionAndTicks memory expected
-    ) internal view {
+    function assertMany(ExpectedPositionAndTicks memory expected) internal view {
         assertPosition(
             ExpectedPosition({
                 pool: expected.pool,
@@ -332,9 +276,7 @@ abstract contract Assertions is Test {
     }
 
     function assertPosition(ExpectedPosition memory params) public view {
-        bytes32 positionKey = keccak256(
-            abi.encodePacked(address(this), params.ticks[0], params.ticks[1])
-        );
+        bytes32 positionKey = keccak256(abi.encodePacked(address(this), params.ticks[0], params.ticks[1]));
         (
             uint128 liquidity,
             uint256 feeGrowthInside0LastX128,
@@ -344,32 +286,13 @@ abstract contract Assertions is Test {
         ) = params.pool.positions(positionKey);
 
         assertEq(liquidity, params.liquidity, "incorrect position liquidity");
-        assertEq(
-            feeGrowthInside0LastX128,
-            params.feeGrowth[0],
-            "incorrect position fee growth for token0"
-        );
-        assertEq(
-            feeGrowthInside1LastX128,
-            params.feeGrowth[1],
-            "incorrect position fee growth for token1"
-        );
-        assertEq(
-            tokensOwed0,
-            params.tokensOwed[0],
-            "incorrect position tokens owed for token0"
-        );
-        assertEq(
-            tokensOwed1,
-            params.tokensOwed[1],
-            "incorrect position tokens owed for token1"
-        );
+        assertEq(feeGrowthInside0LastX128, params.feeGrowth[0], "incorrect position fee growth for token0");
+        assertEq(feeGrowthInside1LastX128, params.feeGrowth[1], "incorrect position fee growth for token1");
+        assertEq(tokensOwed0, params.tokensOwed[0], "incorrect position tokens owed for token0");
+        assertEq(tokensOwed1, params.tokensOwed[1], "incorrect position tokens owed for token1");
     }
 
-    function tickInBitMap(
-        ZoneXPool pool,
-        int24 tick_
-    ) internal view returns (bool initialized) {
+    function tickInBitMap(ZoneXPool pool, int24 tick_) internal view returns (bool initialized) {
         tick_ /= int24(pool.tickSpacing());
 
         int16 wordPos = int16(tick_ >> 8);

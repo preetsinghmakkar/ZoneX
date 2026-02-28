@@ -32,39 +32,22 @@ contract ZoneXManagerTest is Test, TestUtils {
     }
 
     function testMintInRange() public {
-        (
-            IZoneXManager.MintParams[] memory mints,
-            uint256 poolBalance0,
-            uint256 poolBalance1
-        ) = setupPool(
-                PoolParams({
-                    wethBalance: 1 ether,
-                    usdcBalance: 5000 ether,
-                    currentPrice: 5000,
-                    mints: mintParams(
-                        mintParams(4545, 5500, 1 ether, 5000 ether)
-                    ),
-                    transferInMintCallback: true,
-                    transferInSwapCallback: true,
-                    mintLiquidity: true
-                })
-            );
-
-        (uint256 expectedAmount0, uint256 expectedAmount1) = (
-            0.987078348444137445 ether,
-            5000 ether
+        (IZoneXManager.MintParams[] memory mints, uint256 poolBalance0, uint256 poolBalance1) = setupPool(
+            PoolParams({
+                wethBalance: 1 ether,
+                usdcBalance: 5000 ether,
+                currentPrice: 5000,
+                mints: mintParams(mintParams(4545, 5500, 1 ether, 5000 ether)),
+                transferInMintCallback: true,
+                transferInSwapCallback: true,
+                mintLiquidity: true
+            })
         );
 
-        assertEq(
-            poolBalance0,
-            expectedAmount0,
-            "incorrect weth deposited amount"
-        );
-        assertEq(
-            poolBalance1,
-            expectedAmount1,
-            "incorrect usdc deposited amount"
-        );
+        (uint256 expectedAmount0, uint256 expectedAmount1) = (0.987078348444137445 ether, 5000 ether);
+
+        assertEq(poolBalance0, expectedAmount0, "incorrect weth deposited amount");
+        assertEq(poolBalance1, expectedAmount1, "incorrect usdc deposited amount");
 
         assertMany(
             ExpectedMany({
@@ -74,10 +57,7 @@ contract ZoneXManagerTest is Test, TestUtils {
                 sqrtPriceX96: sqrtP(5000),
                 tick: tick(5000),
                 fees: [uint256(0), 0],
-                userBalances: [
-                    1 ether - expectedAmount0,
-                    5000 ether - expectedAmount1
-                ],
+                userBalances: [1 ether - expectedAmount0, 5000 ether - expectedAmount1],
                 poolBalances: [expectedAmount0, expectedAmount1],
                 position: ExpectedPositionShort({
                     ticks: [mints[0].lowerTick, mints[0].upperTick],
@@ -86,50 +66,28 @@ contract ZoneXManagerTest is Test, TestUtils {
                     tokensOwed: [uint128(0), 0]
                 }),
                 ticks: mintParamsToTicks(mints[0], 5000),
-                observation: ExpectedObservationShort({
-                    index: 0,
-                    timestamp: 1,
-                    tickCumulative: 0,
-                    initialized: true
-                })
+                observation: ExpectedObservationShort({index: 0, timestamp: 1, tickCumulative: 0, initialized: true})
             })
         );
     }
 
     function testMintRangeBelow() public {
-        (
-            IZoneXManager.MintParams[] memory mints,
-            uint256 poolBalance0,
-            uint256 poolBalance1
-        ) = setupPool(
-                PoolParams({
-                    wethBalance: 1 ether,
-                    usdcBalance: 5000 ether,
-                    currentPrice: 5000,
-                    mints: mintParams(
-                        mintParams(4000, 4996, 1 ether, 5000 ether)
-                    ),
-                    transferInMintCallback: true,
-                    transferInSwapCallback: true,
-                    mintLiquidity: true
-                })
-            );
-
-        (uint256 expectedAmount0, uint256 expectedAmount1) = (
-            0 ether,
-            4999.999999999999999994 ether
+        (IZoneXManager.MintParams[] memory mints, uint256 poolBalance0, uint256 poolBalance1) = setupPool(
+            PoolParams({
+                wethBalance: 1 ether,
+                usdcBalance: 5000 ether,
+                currentPrice: 5000,
+                mints: mintParams(mintParams(4000, 4996, 1 ether, 5000 ether)),
+                transferInMintCallback: true,
+                transferInSwapCallback: true,
+                mintLiquidity: true
+            })
         );
 
-        assertEq(
-            poolBalance0,
-            expectedAmount0,
-            "incorrect weth deposited amount"
-        );
-        assertEq(
-            poolBalance1,
-            expectedAmount1,
-            "incorrect usdc deposited amount"
-        );
+        (uint256 expectedAmount0, uint256 expectedAmount1) = (0 ether, 4999.999999999999999994 ether);
+
+        assertEq(poolBalance0, expectedAmount0, "incorrect weth deposited amount");
+        assertEq(poolBalance1, expectedAmount1, "incorrect usdc deposited amount");
 
         assertMany(
             ExpectedMany({
@@ -139,10 +97,7 @@ contract ZoneXManagerTest is Test, TestUtils {
                 sqrtPriceX96: sqrtP(5000),
                 tick: tick(5000),
                 fees: [uint256(0), 0],
-                userBalances: [
-                    1 ether - expectedAmount0,
-                    5000 ether - expectedAmount1
-                ],
+                userBalances: [1 ether - expectedAmount0, 5000 ether - expectedAmount1],
                 poolBalances: [expectedAmount0, expectedAmount1],
                 position: ExpectedPositionShort({
                     ticks: [mints[0].lowerTick, mints[0].upperTick],
@@ -151,47 +106,28 @@ contract ZoneXManagerTest is Test, TestUtils {
                     tokensOwed: [uint128(0), 0]
                 }),
                 ticks: mintParamsToTicks(mints[0], 5000),
-                observation: ExpectedObservationShort({
-                    index: 0,
-                    timestamp: 1,
-                    tickCumulative: 0,
-                    initialized: true
-                })
+                observation: ExpectedObservationShort({index: 0, timestamp: 1, tickCumulative: 0, initialized: true})
             })
         );
     }
 
     function testMintRangeAbove() public {
-        (
-            IZoneXManager.MintParams[] memory mints,
-            uint256 poolBalance0,
-            uint256 poolBalance1
-        ) = setupPool(
-                PoolParams({
-                    wethBalance: 1 ether,
-                    usdcBalance: 5000 ether,
-                    currentPrice: 5000,
-                    mints: mintParams(
-                        mintParams(5027, 6250, 1 ether, 5000 ether)
-                    ),
-                    transferInMintCallback: true,
-                    transferInSwapCallback: true,
-                    mintLiquidity: true
-                })
-            );
+        (IZoneXManager.MintParams[] memory mints, uint256 poolBalance0, uint256 poolBalance1) = setupPool(
+            PoolParams({
+                wethBalance: 1 ether,
+                usdcBalance: 5000 ether,
+                currentPrice: 5000,
+                mints: mintParams(mintParams(5027, 6250, 1 ether, 5000 ether)),
+                transferInMintCallback: true,
+                transferInSwapCallback: true,
+                mintLiquidity: true
+            })
+        );
 
         (uint256 expectedAmount0, uint256 expectedAmount1) = (1 ether, 0);
 
-        assertEq(
-            poolBalance0,
-            expectedAmount0,
-            "incorrect weth deposited amount"
-        );
-        assertEq(
-            poolBalance1,
-            expectedAmount1,
-            "incorrect usdc deposited amount"
-        );
+        assertEq(poolBalance0, expectedAmount0, "incorrect weth deposited amount");
+        assertEq(poolBalance1, expectedAmount1, "incorrect usdc deposited amount");
 
         assertMany(
             ExpectedMany({
@@ -201,10 +137,7 @@ contract ZoneXManagerTest is Test, TestUtils {
                 sqrtPriceX96: sqrtP(5000),
                 tick: tick(5000),
                 fees: [uint256(0), 0],
-                userBalances: [
-                    1 ether - expectedAmount0,
-                    5000 ether - expectedAmount1
-                ],
+                userBalances: [1 ether - expectedAmount0, 5000 ether - expectedAmount1],
                 poolBalances: [expectedAmount0, expectedAmount1],
                 position: ExpectedPositionShort({
                     ticks: [mints[0].lowerTick, mints[0].upperTick],
@@ -213,12 +146,7 @@ contract ZoneXManagerTest is Test, TestUtils {
                     tokensOwed: [uint128(0), 0]
                 }),
                 ticks: mintParamsToTicks(mints[0], 5000),
-                observation: ExpectedObservationShort({
-                    index: 0,
-                    timestamp: 1,
-                    tickCumulative: 0,
-                    initialized: true
-                })
+                observation: ExpectedObservationShort({index: 0, timestamp: 1, tickCumulative: 0, initialized: true})
             })
         );
     }
@@ -229,19 +157,14 @@ contract ZoneXManagerTest is Test, TestUtils {
     // 4000 ------|------ 6250
     //
     function testMintOverlappingRanges() public {
-        (IZoneXManager.MintParams[] memory mints, , ) = setupPool(
+        (IZoneXManager.MintParams[] memory mints,,) = setupPool(
             PoolParams({
                 wethBalance: 3 ether,
                 usdcBalance: 15000 ether,
                 currentPrice: 5000,
                 mints: mintParams(
                     mintParams(4545, 5500, 1 ether, 5000 ether),
-                    mintParams(
-                        4000,
-                        6250,
-                        (1 ether * 75) / 100,
-                        (5000 ether * 75) / 100
-                    )
+                    mintParams(4000, 6250, (1 ether * 75) / 100, (5000 ether * 75) / 100)
                 ),
                 transferInMintCallback: true,
                 transferInSwapCallback: true,
@@ -249,17 +172,13 @@ contract ZoneXManagerTest is Test, TestUtils {
             })
         );
 
-        (uint256 amount0, uint256 amount1) = (
-            1.733189275014643934 ether,
-            8750.000000000000000000 ether
-        );
+        (uint256 amount0, uint256 amount1) = (1.733189275014643934 ether, 8750.0 ether);
 
         assertMany(
             ExpectedPoolAndBalances({
                 pool: pool,
                 tokens: [weth, usdc],
-                liquidity: liquidity(mints[0], 5000) +
-                    liquidity(mints[1], 5000),
+                liquidity: liquidity(mints[0], 5000) + liquidity(mints[1], 5000),
                 sqrtPriceX96: sqrtP(5000),
                 tick: tick(5000),
                 fees: [uint256(0), 0],
@@ -295,13 +214,7 @@ contract ZoneXManagerTest is Test, TestUtils {
         );
 
         assertObservation(
-            ExpectedObservation({
-                pool: pool,
-                index: 0,
-                timestamp: 1,
-                tickCumulative: 0,
-                initialized: true
-            })
+            ExpectedObservation({pool: pool, index: 0, timestamp: 1, tickCumulative: 0, initialized: true})
         );
     }
 
@@ -311,25 +224,15 @@ contract ZoneXManagerTest is Test, TestUtils {
     // 4000 ------ ------ 6250
     //      5000-1 5000+1
     function testMintPartiallyOverlappingRanges() public {
-        (IZoneXManager.MintParams[] memory mints, , ) = setupPool(
+        (IZoneXManager.MintParams[] memory mints,,) = setupPool(
             PoolParams({
                 wethBalance: 3 ether,
                 usdcBalance: 15000 ether,
                 currentPrice: 5000,
                 mints: mintParams(
                     mintParams(4545, 5500, 1 ether, 5000 ether),
-                    mintParams(
-                        4000,
-                        4996,
-                        (1 ether * 75) / 100,
-                        (5000 ether * 75) / 100
-                    ),
-                    mintParams(
-                        5027,
-                        6250,
-                        (1 ether * 50) / 100,
-                        (5000 ether * 50) / 100
-                    )
+                    mintParams(4000, 4996, (1 ether * 75) / 100, (5000 ether * 75) / 100),
+                    mintParams(5027, 6250, (1 ether * 50) / 100, (5000 ether * 50) / 100)
                 ),
                 transferInMintCallback: true,
                 transferInSwapCallback: true,
@@ -337,10 +240,7 @@ contract ZoneXManagerTest is Test, TestUtils {
             })
         );
 
-        (uint256 amount0, uint256 amount1) = (
-            1.487078348444137445 ether,
-            8749.999999999999999994 ether
-        );
+        (uint256 amount0, uint256 amount1) = (1.487078348444137445 ether, 8749.999999999999999994 ether);
 
         assertMany(
             ExpectedPoolAndBalances({
@@ -382,13 +282,7 @@ contract ZoneXManagerTest is Test, TestUtils {
         );
 
         assertObservation(
-            ExpectedObservation({
-                pool: pool,
-                index: 0,
-                timestamp: 1,
-                tickCumulative: 0,
-                initialized: true
-            })
+            ExpectedObservation({pool: pool, index: 0, timestamp: 1, tickCumulative: 0, initialized: true})
         );
     }
 
@@ -455,7 +349,7 @@ contract ZoneXManagerTest is Test, TestUtils {
     }
 
     function testMintInsufficientTokenBalance() public {
-        (IZoneXManager.MintParams[] memory mints, , ) = setupPool(
+        (IZoneXManager.MintParams[] memory mints,,) = setupPool(
             PoolParams({
                 wethBalance: 0,
                 usdcBalance: 0,
@@ -481,9 +375,7 @@ contract ZoneXManagerTest is Test, TestUtils {
         weth.approve(address(manager), amount0);
         usdc.approve(address(manager), amount1);
 
-        vm.expectRevert(
-            encodeSlippageCheckFailed(0.987078348444137445 ether, 5000 ether)
-        );
+        vm.expectRevert(encodeSlippageCheckFailed(0.987078348444137445 ether, 5000 ether));
         manager.mint(
             IZoneXManager.MintParams({
                 tokenA: address(weth),
@@ -514,32 +406,24 @@ contract ZoneXManagerTest is Test, TestUtils {
     }
 
     function testSwapBuyEth() public {
-        (
-            IZoneXManager.MintParams[] memory mints,
-            uint256 poolBalance0,
-            uint256 poolBalance1
-        ) = setupPool(
-                PoolParams({
-                    wethBalance: 1 ether,
-                    usdcBalance: 5000 ether,
-                    currentPrice: 5000,
-                    mints: mintParams(
-                        mintParams(4545, 5500, 1 ether, 5000 ether)
-                    ),
-                    transferInMintCallback: true,
-                    transferInSwapCallback: true,
-                    mintLiquidity: true
-                })
-            );
+        (IZoneXManager.MintParams[] memory mints, uint256 poolBalance0, uint256 poolBalance1) = setupPool(
+            PoolParams({
+                wethBalance: 1 ether,
+                usdcBalance: 5000 ether,
+                currentPrice: 5000,
+                mints: mintParams(mintParams(4545, 5500, 1 ether, 5000 ether)),
+                transferInMintCallback: true,
+                transferInSwapCallback: true,
+                mintLiquidity: true
+            })
+        );
 
         uint256 swapAmount = 42 ether; // 42 USDC
         usdc.mint(address(this), swapAmount);
         usdc.approve(address(manager), swapAmount);
 
-        (uint256 userBalance0Before, uint256 userBalance1Before) = (
-            weth.balanceOf(address(this)),
-            usdc.balanceOf(address(this))
-        );
+        (uint256 userBalance0Before, uint256 userBalance1Before) =
+            (weth.balanceOf(address(this)), usdc.balanceOf(address(this)));
 
         uint256 amountOut = manager.swapSingle(
             IZoneXManager.SwapSingleParams({
@@ -566,14 +450,8 @@ contract ZoneXManagerTest is Test, TestUtils {
                     uint256(0),
                     27727650748765949686643356806934465 // 0.000081484242041869
                 ],
-                userBalances: [
-                    userBalance0Before + amountOut,
-                    userBalance1Before - swapAmount
-                ],
-                poolBalances: [
-                    poolBalance0 - amountOut,
-                    poolBalance1 + swapAmount
-                ],
+                userBalances: [userBalance0Before + amountOut, userBalance1Before - swapAmount],
+                poolBalances: [poolBalance0 - amountOut, poolBalance1 + swapAmount],
                 position: ExpectedPositionShort({
                     ticks: [mints[0].lowerTick, mints[0].upperTick],
                     liquidity: liquidity(mints[0], 5000),
@@ -581,43 +459,30 @@ contract ZoneXManagerTest is Test, TestUtils {
                     tokensOwed: [uint128(0), 0]
                 }),
                 ticks: mintParamsToTicks(mints[0], 5000),
-                observation: ExpectedObservationShort({
-                    index: 0,
-                    timestamp: 1,
-                    tickCumulative: 0,
-                    initialized: true
-                })
+                observation: ExpectedObservationShort({index: 0, timestamp: 1, tickCumulative: 0, initialized: true})
             })
         );
     }
 
     function testSwapBuyUSDC() public {
-        (
-            IZoneXManager.MintParams[] memory mints,
-            uint256 poolBalance0,
-            uint256 poolBalance1
-        ) = setupPool(
-                PoolParams({
-                    wethBalance: 1 ether,
-                    usdcBalance: 5000 ether,
-                    currentPrice: 5000,
-                    mints: mintParams(
-                        mintParams(4545, 5500, 1 ether, 5000 ether)
-                    ),
-                    transferInMintCallback: true,
-                    transferInSwapCallback: true,
-                    mintLiquidity: true
-                })
-            );
+        (IZoneXManager.MintParams[] memory mints, uint256 poolBalance0, uint256 poolBalance1) = setupPool(
+            PoolParams({
+                wethBalance: 1 ether,
+                usdcBalance: 5000 ether,
+                currentPrice: 5000,
+                mints: mintParams(mintParams(4545, 5500, 1 ether, 5000 ether)),
+                transferInMintCallback: true,
+                transferInSwapCallback: true,
+                mintLiquidity: true
+            })
+        );
 
         uint256 swapAmount = 0.01337 ether;
         weth.mint(address(this), swapAmount);
         weth.approve(address(manager), swapAmount);
 
-        (uint256 userBalance0Before, uint256 userBalance1Before) = (
-            weth.balanceOf(address(this)),
-            usdc.balanceOf(address(this))
-        );
+        (uint256 userBalance0Before, uint256 userBalance1Before) =
+            (weth.balanceOf(address(this)), usdc.balanceOf(address(this)));
 
         uint256 amountOut = manager.swapSingle(
             IZoneXManager.SwapSingleParams({
@@ -644,14 +509,8 @@ contract ZoneXManagerTest is Test, TestUtils {
                     uint256(8826635488357160650248135250207), // 0.000000025939150383
                     0
                 ],
-                userBalances: [
-                    userBalance0Before - swapAmount,
-                    userBalance1Before + amountOut
-                ],
-                poolBalances: [
-                    poolBalance0 + swapAmount,
-                    poolBalance1 - amountOut
-                ],
+                userBalances: [userBalance0Before - swapAmount, userBalance1Before + amountOut],
+                poolBalances: [poolBalance0 + swapAmount, poolBalance1 - amountOut],
                 position: ExpectedPositionShort({
                     ticks: [mints[0].lowerTick, mints[0].upperTick],
                     liquidity: liquidity(mints[0], 5000),
@@ -659,35 +518,24 @@ contract ZoneXManagerTest is Test, TestUtils {
                     tokensOwed: [uint128(0), 0]
                 }),
                 ticks: mintParamsToTicks(mints[0], 5000),
-                observation: ExpectedObservationShort({
-                    index: 0,
-                    timestamp: 1,
-                    tickCumulative: 0,
-                    initialized: true
-                })
+                observation: ExpectedObservationShort({index: 0, timestamp: 1, tickCumulative: 0, initialized: true})
             })
         );
     }
 
     function testSwapBuyMultipool() public {
         // Deploy WETH/USDC pool
-        (
-            IZoneXManager.MintParams[] memory mints,
-            uint256 poolBalance0,
-            uint256 poolBalance1
-        ) = setupPool(
-                PoolParams({
-                    wethBalance: 1 ether,
-                    usdcBalance: 5000 ether,
-                    currentPrice: 5000,
-                    mints: mintParams(
-                        mintParams(4545, 5500, 1 ether, 5000 ether)
-                    ),
-                    transferInMintCallback: true,
-                    transferInSwapCallback: true,
-                    mintLiquidity: true
-                })
-            );
+        (IZoneXManager.MintParams[] memory mints, uint256 poolBalance0, uint256 poolBalance1) = setupPool(
+            PoolParams({
+                wethBalance: 1 ether,
+                usdcBalance: 5000 ether,
+                currentPrice: 5000,
+                mints: mintParams(mintParams(4545, 5500, 1 ether, 5000 ether)),
+                transferInMintCallback: true,
+                transferInSwapCallback: true,
+                mintLiquidity: true
+            })
+        );
 
         // Deploy WETH/UNI pool
         (
@@ -696,20 +544,18 @@ contract ZoneXManagerTest is Test, TestUtils {
             uint256 wethUNIBalance0,
             uint256 wethUNIBalance1
         ) = setupPool(
-                PoolParamsFull({
-                    token0: weth,
-                    token1: uni,
-                    token0Balance: 10 ether,
-                    token1Balance: 100 ether,
-                    currentPrice: 10,
-                    mints: mintParams(
-                        mintParams(weth, uni, 7, 13, 10 ether, 100 ether)
-                    ),
-                    transferInMintCallback: true,
-                    transferInSwapCallback: true,
-                    mintLiquidity: true
-                })
-            );
+            PoolParamsFull({
+                token0: weth,
+                token1: uni,
+                token0Balance: 10 ether,
+                token1Balance: 100 ether,
+                currentPrice: 10,
+                mints: mintParams(mintParams(weth, uni, 7, 13, 10 ether, 100 ether)),
+                transferInMintCallback: true,
+                transferInSwapCallback: true,
+                mintLiquidity: true
+            })
+        );
 
         uint256 swapAmount = 2.5 ether;
         uni.mint(address(this), swapAmount);
@@ -724,19 +570,11 @@ contract ZoneXManagerTest is Test, TestUtils {
         );
 
         uint256[] memory userBalances = new uint256[](3);
-        (userBalances[0], userBalances[1], userBalances[2]) = (
-            weth.balanceOf(address(this)),
-            usdc.balanceOf(address(this)),
-            uni.balanceOf(address(this))
-        );
+        (userBalances[0], userBalances[1], userBalances[2]) =
+            (weth.balanceOf(address(this)), usdc.balanceOf(address(this)), uni.balanceOf(address(this)));
 
         uint256 amountOut = manager.swap(
-            IZoneXManager.SwapParams({
-                path: path,
-                recipient: address(this),
-                amountIn: swapAmount,
-                minAmountOut: 0
-            })
+            IZoneXManager.SwapParams({path: path, recipient: address(this), amountIn: swapAmount, minAmountOut: 0})
         );
 
         assertEq(amountOut, 1223.599499987434631189 ether, "invalid USDC out");
@@ -765,12 +603,7 @@ contract ZoneXManagerTest is Test, TestUtils {
                     tokensOwed: [uint128(0), 0]
                 }),
                 ticks: mintParamsToTicks(mint, 5000),
-                observation: ExpectedObservationShort({
-                    index: 0,
-                    timestamp: 1,
-                    tickCumulative: 0,
-                    initialized: true
-                })
+                observation: ExpectedObservationShort({index: 0, timestamp: 1, tickCumulative: 0, initialized: true})
             })
         );
 
@@ -787,10 +620,7 @@ contract ZoneXManagerTest is Test, TestUtils {
                     13250097234547358482322170106940574 // 0.000038938536117641
                 ],
                 userBalances: [userBalances[0], userBalances[2] - swapAmount],
-                poolBalances: [
-                    wethUNIBalance0 - 0.248234183855004779 ether,
-                    wethUNIBalance1 + swapAmount
-                ],
+                poolBalances: [wethUNIBalance0 - 0.248234183855004779 ether, wethUNIBalance1 + swapAmount],
                 position: ExpectedPositionShort({
                     ticks: [mint.lowerTick, mint.upperTick],
                     liquidity: liquidity(mint, 10),
@@ -798,34 +628,23 @@ contract ZoneXManagerTest is Test, TestUtils {
                     tokensOwed: [uint128(0), 0]
                 }),
                 ticks: mintParamsToTicks(mint, 10),
-                observation: ExpectedObservationShort({
-                    index: 0,
-                    timestamp: 1,
-                    tickCumulative: 0,
-                    initialized: true
-                })
+                observation: ExpectedObservationShort({index: 0, timestamp: 1, tickCumulative: 0, initialized: true})
             })
         );
     }
 
     function testSwapMixed() public {
-        (
-            IZoneXManager.MintParams[] memory mints,
-            uint256 poolBalance0,
-            uint256 poolBalance1
-        ) = setupPool(
-                PoolParams({
-                    wethBalance: 1 ether,
-                    usdcBalance: 5000 ether,
-                    currentPrice: 5000,
-                    mints: mintParams(
-                        mintParams(4545, 5500, 1 ether, 5000 ether)
-                    ),
-                    transferInMintCallback: true,
-                    transferInSwapCallback: true,
-                    mintLiquidity: true
-                })
-            );
+        (IZoneXManager.MintParams[] memory mints, uint256 poolBalance0, uint256 poolBalance1) = setupPool(
+            PoolParams({
+                wethBalance: 1 ether,
+                usdcBalance: 5000 ether,
+                currentPrice: 5000,
+                mints: mintParams(mintParams(4545, 5500, 1 ether, 5000 ether)),
+                transferInMintCallback: true,
+                transferInSwapCallback: true,
+                mintLiquidity: true
+            })
+        );
 
         uint256 ethAmount = 0.01337 ether;
         weth.mint(address(this), ethAmount);
@@ -869,14 +688,8 @@ contract ZoneXManagerTest is Test, TestUtils {
                     uint256(8826635488357160650248135250207), // 0.000000025939150383
                     36310018837669696018223443437652275 // 0.000106705555054829
                 ],
-                userBalances: [
-                    userBalance0Before - ethAmount + amountOut2,
-                    userBalance1Before - usdcAmount + amountOut1
-                ],
-                poolBalances: [
-                    poolBalance0 + ethAmount - amountOut2,
-                    poolBalance1 + usdcAmount - amountOut1
-                ],
+                userBalances: [userBalance0Before - ethAmount + amountOut2, userBalance1Before - usdcAmount + amountOut1],
+                poolBalances: [poolBalance0 + ethAmount - amountOut2, poolBalance1 + usdcAmount - amountOut1],
                 position: ExpectedPositionShort({
                     ticks: [mints[0].lowerTick, mints[0].upperTick],
                     liquidity: liquidity(mints[0], 5000),
@@ -884,12 +697,7 @@ contract ZoneXManagerTest is Test, TestUtils {
                     tokensOwed: [uint128(0), 0]
                 }),
                 ticks: mintParamsToTicks(mints[0], 5000),
-                observation: ExpectedObservationShort({
-                    index: 0,
-                    timestamp: 1,
-                    tickCumulative: 0,
-                    initialized: true
-                })
+                observation: ExpectedObservationShort({index: 0, timestamp: 1, tickCumulative: 0, initialized: true})
             })
         );
     }
@@ -978,7 +786,7 @@ contract ZoneXManagerTest is Test, TestUtils {
     }
 
     function testGetPosition() public {
-        (IZoneXManager.MintParams[] memory mints, , ) = setupPool(
+        (IZoneXManager.MintParams[] memory mints,,) = setupPool(
             PoolParams({
                 wethBalance: 1 ether,
                 usdcBalance: 5000 ether,
@@ -997,15 +805,15 @@ contract ZoneXManagerTest is Test, TestUtils {
             uint128 tokensOwed0,
             uint128 tokensOwed1
         ) = manager.getPosition(
-                IZoneXManager.GetPositionParams({
-                    tokenA: address(weth),
-                    tokenB: address(usdc),
-                    fee: 3000,
-                    owner: address(this),
-                    lowerTick: mints[0].lowerTick,
-                    upperTick: mints[0].upperTick
-                })
-            );
+            IZoneXManager.GetPositionParams({
+                tokenA: address(weth),
+                tokenB: address(usdc),
+                fee: 3000,
+                owner: address(this),
+                lowerTick: mints[0].lowerTick,
+                upperTick: mints[0].upperTick
+            })
+        );
 
         assertPosition(
             ExpectedPosition({
@@ -1053,43 +861,31 @@ contract ZoneXManagerTest is Test, TestUtils {
         uint256 amount0,
         uint256 amount1
     ) internal pure returns (IZoneXManager.MintParams memory params) {
-        params = mintParams(
-            address(token0),
-            address(token1),
-            lowerPrice,
-            upperPrice,
-            amount0,
-            amount1
-        );
+        params = mintParams(address(token0), address(token1), lowerPrice, upperPrice, amount0, amount1);
     }
 
-    function mintParams(
-        uint256 lowerPrice,
-        uint256 upperPrice,
-        uint256 amount0,
-        uint256 amount1
-    ) internal view returns (IZoneXManager.MintParams memory params) {
-        params = mintParams(
-            weth,
-            usdc,
-            lowerPrice,
-            upperPrice,
-            amount0,
-            amount1
-        );
+    function mintParams(uint256 lowerPrice, uint256 upperPrice, uint256 amount0, uint256 amount1)
+        internal
+        view
+        returns (IZoneXManager.MintParams memory params)
+    {
+        params = mintParams(weth, usdc, lowerPrice, upperPrice, amount0, amount1);
     }
 
-    function mintParams(
-        IZoneXManager.MintParams memory mint
-    ) internal pure returns (IZoneXManager.MintParams[] memory mints) {
+    function mintParams(IZoneXManager.MintParams memory mint)
+        internal
+        pure
+        returns (IZoneXManager.MintParams[] memory mints)
+    {
         mints = new IZoneXManager.MintParams[](1);
         mints[0] = mint;
     }
 
-    function mintParams(
-        IZoneXManager.MintParams memory mint1,
-        IZoneXManager.MintParams memory mint2
-    ) internal pure returns (IZoneXManager.MintParams[] memory mints) {
+    function mintParams(IZoneXManager.MintParams memory mint1, IZoneXManager.MintParams memory mint2)
+        internal
+        pure
+        returns (IZoneXManager.MintParams[] memory mints)
+    {
         mints = new IZoneXManager.MintParams[](2);
         mints[0] = mint1;
         mints[1] = mint2;
@@ -1106,18 +902,15 @@ contract ZoneXManagerTest is Test, TestUtils {
         mints[2] = mint3;
     }
 
-    function mintParamsToTicks(
-        IZoneXManager.MintParams memory mint,
-        uint256 currentPrice
-    ) internal pure returns (ExpectedTickShort[2] memory ticks) {
+    function mintParamsToTicks(IZoneXManager.MintParams memory mint, uint256 currentPrice)
+        internal
+        pure
+        returns (ExpectedTickShort[2] memory ticks)
+    {
         uint128 liq = liquidity(mint, currentPrice);
 
-        ticks[0] = ExpectedTickShort({
-            tick: mint.lowerTick,
-            initialized: true,
-            liquidityGross: liq,
-            liquidityNet: int128(liq)
-        });
+        ticks[0] =
+            ExpectedTickShort({tick: mint.lowerTick, initialized: true, liquidityGross: liq, liquidityNet: int128(liq)});
         ticks[1] = ExpectedTickShort({
             tick: mint.upperTick,
             initialized: true,
@@ -1126,10 +919,11 @@ contract ZoneXManagerTest is Test, TestUtils {
         });
     }
 
-    function liquidity(
-        IZoneXManager.MintParams memory params,
-        uint256 currentPrice
-    ) internal pure returns (uint128 liquidity_) {
+    function liquidity(IZoneXManager.MintParams memory params, uint256 currentPrice)
+        internal
+        pure
+        returns (uint128 liquidity_)
+    {
         liquidity_ = LiquidityMath.getLiquidityForAmounts(
             sqrtP(currentPrice),
             sqrtP60FromTick(params.lowerTick),
@@ -1139,27 +933,14 @@ contract ZoneXManagerTest is Test, TestUtils {
         );
     }
 
-    function setupPool(
-        PoolParamsFull memory params
-    )
+    function setupPool(PoolParamsFull memory params)
         internal
-        returns (
-            ZoneXPool pool_,
-            IZoneXManager.MintParams[] memory mints_,
-            uint256 poolBalance0,
-            uint256 poolBalance1
-        )
+        returns (ZoneXPool pool_, IZoneXManager.MintParams[] memory mints_, uint256 poolBalance0, uint256 poolBalance1)
     {
         params.token0.mint(address(this), params.token0Balance);
         params.token1.mint(address(this), params.token1Balance);
 
-        pool_ = deployPool(
-            factory,
-            address(params.token0),
-            address(params.token1),
-            3000,
-            params.currentPrice
-        );
+        pool_ = deployPool(factory, address(params.token0), address(params.token1), 3000, params.currentPrice);
 
         if (params.mintLiquidity) {
             params.token0.approve(address(manager), params.token0Balance);
@@ -1168,9 +949,7 @@ contract ZoneXManagerTest is Test, TestUtils {
             uint256 poolBalance0Tmp;
             uint256 poolBalance1Tmp;
             for (uint256 i = 0; i < params.mints.length; i++) {
-                (poolBalance0Tmp, poolBalance1Tmp) = manager.mint(
-                    params.mints[i]
-                );
+                (poolBalance0Tmp, poolBalance1Tmp) = manager.mint(params.mints[i]);
                 poolBalance0 += poolBalance0Tmp;
                 poolBalance1 += poolBalance1Tmp;
             }
@@ -1181,15 +960,9 @@ contract ZoneXManagerTest is Test, TestUtils {
         mints_ = params.mints;
     }
 
-    function setupPool(
-        PoolParams memory params
-    )
+    function setupPool(PoolParams memory params)
         internal
-        returns (
-            IZoneXManager.MintParams[] memory mints_,
-            uint256 poolBalance0,
-            uint256 poolBalance1
-        )
+        returns (IZoneXManager.MintParams[] memory mints_, uint256 poolBalance0, uint256 poolBalance1)
     {
         (pool, mints_, poolBalance0, poolBalance1) = setupPool(
             PoolParamsFull({

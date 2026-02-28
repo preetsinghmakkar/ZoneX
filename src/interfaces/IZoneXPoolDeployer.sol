@@ -12,11 +12,5 @@ interface IZoneXPoolDeployer {
 
     function parameters()
         external
-        returns (
-            address factory,
-            address token0,
-            address token1,
-            uint24 tickSpacing,
-            uint24 fee
-        );
+        returns (address factory, address token0, address token1, uint24 tickSpacing, uint24 fee);
 }

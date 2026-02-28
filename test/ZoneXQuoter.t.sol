@@ -33,13 +33,7 @@ contract ZoneXQuoterTest is Test, TestUtils {
         usdc.mint(address(this), usdcBalance);
         uni.mint(address(this), uniBalance);
 
-        wethUSDC = deployPool(
-            factory,
-            address(weth),
-            address(usdc),
-            3000,
-            5000
-        );
+        wethUSDC = deployPool(factory, address(weth), address(usdc), 3000, 5000);
         wethUNI = deployPool(factory, address(weth), address(uni), 3000, 10);
 
         manager = new ZoneXManager(address(factory));
@@ -80,16 +74,15 @@ contract ZoneXQuoterTest is Test, TestUtils {
     }
 
     function testQuoteUSDCforETH() public {
-        (uint256 amountOut, uint160 sqrtPriceX96After, int24 tickAfter) = quoter
-            .quoteSingle(
-                ZoneXQuoter.QuoteSingleParams({
-                    tokenIn: address(weth),
-                    tokenOut: address(usdc),
-                    fee: 3000,
-                    amountIn: 0.01337 ether,
-                    sqrtPriceLimitX96: sqrtP(4993)
-                })
-            );
+        (uint256 amountOut, uint160 sqrtPriceX96After, int24 tickAfter) = quoter.quoteSingle(
+            ZoneXQuoter.QuoteSingleParams({
+                tokenIn: address(weth),
+                tokenOut: address(usdc),
+                fee: 3000,
+                amountIn: 0.01337 ether,
+                sqrtPriceLimitX96: sqrtP(4993)
+            })
+        );
 
         assertEq(amountOut, 66.608848079558229697 ether, "invalid amountOut");
         assertEq(
@@ -101,16 +94,15 @@ contract ZoneXQuoterTest is Test, TestUtils {
     }
 
     function testQuoteETHforUSDC() public {
-        (uint256 amountOut, uint160 sqrtPriceX96After, int24 tickAfter) = quoter
-            .quoteSingle(
-                ZoneXQuoter.QuoteSingleParams({
-                    tokenIn: address(usdc),
-                    tokenOut: address(weth),
-                    fee: 3000,
-                    amountIn: 42 ether,
-                    sqrtPriceLimitX96: sqrtP(5005)
-                })
-            );
+        (uint256 amountOut, uint160 sqrtPriceX96After, int24 tickAfter) = quoter.quoteSingle(
+            ZoneXQuoter.QuoteSingleParams({
+                tokenIn: address(usdc),
+                tokenOut: address(weth),
+                fee: 3000,
+                amountIn: 42 ether,
+                sqrtPriceLimitX96: sqrtP(5005)
+            })
+        );
 
         assertEq(amountOut, 0.008371593947078467 ether, "invalid amountOut");
         assertEq(
@@ -133,11 +125,8 @@ contract ZoneXQuoterTest is Test, TestUtils {
             bytes3(uint24(3000)),
             bytes20(address(usdc))
         );
-        (
-            uint256 amountOut,
-            uint160[] memory sqrtPriceX96AfterList,
-            int24[] memory tickAfterList
-        ) = quoter.quote(path, 3 ether);
+        (uint256 amountOut, uint160[] memory sqrtPriceX96AfterList, int24[] memory tickAfterList) =
+            quoter.quote(path, 3 ether);
 
         assertEq(amountOut, 1463.863228593034635225 ether, "invalid amountOut");
         assertEq(
@@ -167,15 +156,10 @@ contract ZoneXQuoterTest is Test, TestUtils {
             bytes3(uint24(3000)),
             bytes20(address(usdc))
         );
-        (uint256 amountOut, , ) = quoter.quote(path, amountIn);
+        (uint256 amountOut,,) = quoter.quote(path, amountIn);
 
         uint256 amountOutActual = manager.swap(
-            IZoneXManager.SwapParams({
-                path: path,
-                recipient: address(this),
-                amountIn: amountIn,
-                minAmountOut: amountOut
-            })
+            IZoneXManager.SwapParams({path: path, recipient: address(this), amountIn: amountIn, minAmountOut: amountOut})
         );
 
         assertEq(amountOutActual, amountOut, "invalid amount1Delta");
@@ -183,7 +167,7 @@ contract ZoneXQuoterTest is Test, TestUtils {
 
     function testQuoteAndSwapUSDCforETH() public {
         uint256 amountIn = 0.01337 ether;
-        (uint256 amountOut, , ) = quoter.quoteSingle(
+        (uint256 amountOut,,) = quoter.quoteSingle(
             ZoneXQuoter.QuoteSingleParams({
                 tokenIn: address(weth),
                 tokenOut: address(usdc),
@@ -193,14 +177,13 @@ contract ZoneXQuoterTest is Test, TestUtils {
             })
         );
 
-        IZoneXManager.SwapSingleParams memory swapParams = IZoneXManager
-            .SwapSingleParams({
-                tokenIn: address(weth),
-                tokenOut: address(usdc),
-                fee: 3000,
-                amountIn: amountIn,
-                sqrtPriceLimitX96: sqrtP(4993)
-            });
+        IZoneXManager.SwapSingleParams memory swapParams = IZoneXManager.SwapSingleParams({
+            tokenIn: address(weth),
+            tokenOut: address(usdc),
+            fee: 3000,
+            amountIn: amountIn,
+            sqrtPriceLimitX96: sqrtP(4993)
+        });
         uint256 amountOutActual = manager.swapSingle(swapParams);
 
         assertEq(amountOutActual, amountOut, "invalid amount1Delta");
@@ -208,7 +191,7 @@ contract ZoneXQuoterTest is Test, TestUtils {
 
     function testQuoteAndSwapETHforUSDC() public {
         uint256 amountIn = 55 ether;
-        (uint256 amountOut, , ) = quoter.quoteSingle(
+        (uint256 amountOut,,) = quoter.quoteSingle(
             ZoneXQuoter.QuoteSingleParams({
                 tokenIn: address(usdc),
                 tokenOut: address(weth),
@@ -218,14 +201,13 @@ contract ZoneXQuoterTest is Test, TestUtils {
             })
         );
 
-        IZoneXManager.SwapSingleParams memory swapParams = IZoneXManager
-            .SwapSingleParams({
-                tokenIn: address(usdc),
-                tokenOut: address(weth),
-                fee: 3000,
-                amountIn: amountIn,
-                sqrtPriceLimitX96: sqrtP(5010)
-            });
+        IZoneXManager.SwapSingleParams memory swapParams = IZoneXManager.SwapSingleParams({
+            tokenIn: address(usdc),
+            tokenOut: address(weth),
+            fee: 3000,
+            amountIn: amountIn,
+            sqrtPriceLimitX96: sqrtP(5010)
+        });
         uint256 amountOutActual = manager.swapSingle(swapParams);
 
         assertEq(amountOutActual, amountOut, "invalid amount0Delta");

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.14;
+
 import "prb-math/PRBMath.sol";
 
 import "./interfaces/IERC20.sol";
@@ -55,8 +56,7 @@ contract ZoneXPool is IZoneXPool {
     event Flash(address indexed recipient, uint256 amount0, uint256 amount1);
 
     event IncreaseObservationCardinalityNext(
-        uint16 observationCardinalityNextOld,
-        uint16 observationCardinalityNextNew
+        uint16 observationCardinalityNextOld, uint16 observationCardinalityNextNew
     );
 
     event Mint(
@@ -133,9 +133,7 @@ contract ZoneXPool is IZoneXPool {
     Oracle.Observation[65535] public observations;
 
     constructor() {
-        (factory, token0, token1, tickSpacing, fee) = IZoneXPoolDeployer(
-            msg.sender
-        ).parameters();
+        (factory, token0, token1, tickSpacing, fee) = IZoneXPoolDeployer(msg.sender).parameters();
     }
 
     function initialize(uint160 sqrtPriceX96) public {
@@ -143,9 +141,7 @@ contract ZoneXPool is IZoneXPool {
 
         int24 tick = TickMath.getTickAtSqrtRatio(sqrtPriceX96);
 
-        (uint16 cardinality, uint16 cardinalityNext) = observations.initialize(
-            _blockTimestamp()
-        );
+        (uint16 cardinality, uint16 cardinalityNext) = observations.initialize(_blockTimestamp());
 
         slot0 = Slot0({
             sqrtPriceX96: sqrtPriceX96,
@@ -163,9 +159,7 @@ contract ZoneXPool is IZoneXPool {
         int128 liquidityDelta;
     }
 
-    function _modifyPosition(
-        ModifyPositionParams memory params
-    )
+    function _modifyPosition(ModifyPositionParams memory params)
         internal
         returns (Position.Info storage position, int256 amount0, int256 amount1)
     {
@@ -174,11 +168,7 @@ contract ZoneXPool is IZoneXPool {
         uint256 feeGrowthGlobal0X128_ = feeGrowthGlobal0X128;
         uint256 feeGrowthGlobal1X128_ = feeGrowthGlobal1X128;
 
-        position = positions.get(
-            params.owner,
-            params.lowerTick,
-            params.upperTick
-        );
+        position = positions.get(params.owner, params.lowerTick, params.upperTick);
 
         bool flippedLower = ticks.update(
             params.lowerTick,
@@ -205,20 +195,11 @@ contract ZoneXPool is IZoneXPool {
             tickBitmap.flipTick(params.upperTick, int24(tickSpacing));
         }
 
-        (uint256 feeGrowthInside0X128, uint256 feeGrowthInside1X128) = ticks
-            .getFeeGrowthInside(
-                params.lowerTick,
-                params.upperTick,
-                slot0_.tick,
-                feeGrowthGlobal0X128_,
-                feeGrowthGlobal1X128_
-            );
-
-        position.update(
-            params.liquidityDelta,
-            feeGrowthInside0X128,
-            feeGrowthInside1X128
+        (uint256 feeGrowthInside0X128, uint256 feeGrowthInside1X128) = ticks.getFeeGrowthInside(
+            params.lowerTick, params.upperTick, slot0_.tick, feeGrowthGlobal0X128_, feeGrowthGlobal1X128_
         );
+
+        position.update(params.liquidityDelta, feeGrowthInside0X128, feeGrowthInside1X128);
 
         if (slot0_.tick < params.lowerTick) {
             amount0 = Math.calcAmount0Delta(
@@ -228,21 +209,14 @@ contract ZoneXPool is IZoneXPool {
             );
         } else if (slot0_.tick < params.upperTick) {
             amount0 = Math.calcAmount0Delta(
-                slot0_.sqrtPriceX96,
-                TickMath.getSqrtRatioAtTick(params.upperTick),
-                params.liquidityDelta
+                slot0_.sqrtPriceX96, TickMath.getSqrtRatioAtTick(params.upperTick), params.liquidityDelta
             );
 
             amount1 = Math.calcAmount1Delta(
-                TickMath.getSqrtRatioAtTick(params.lowerTick),
-                slot0_.sqrtPriceX96,
-                params.liquidityDelta
+                TickMath.getSqrtRatioAtTick(params.lowerTick), slot0_.sqrtPriceX96, params.liquidityDelta
             );
 
-            liquidity = LiquidityMath.addLiquidity(
-                liquidity,
-                params.liquidityDelta
-            );
+            liquidity = LiquidityMath.addLiquidity(liquidity, params.liquidityDelta);
         } else {
             amount1 = Math.calcAmount1Delta(
                 TickMath.getSqrtRatioAtTick(params.lowerTick),
@@ -252,18 +226,13 @@ contract ZoneXPool is IZoneXPool {
         }
     }
 
-    function mint(
-        address owner,
-        int24 lowerTick,
-        int24 upperTick,
-        uint128 amount,
-        bytes calldata data
-    ) external returns (uint256 amount0, uint256 amount1) {
-        if (
-            lowerTick >= upperTick ||
-            lowerTick < TickMath.MIN_TICK ||
-            upperTick > TickMath.MAX_TICK
-        ) revert InvalidTickRange();
+    function mint(address owner, int24 lowerTick, int24 upperTick, uint128 amount, bytes calldata data)
+        external
+        returns (uint256 amount0, uint256 amount1)
+    {
+        if (lowerTick >= upperTick || lowerTick < TickMath.MIN_TICK || upperTick > TickMath.MAX_TICK) {
+            revert InvalidTickRange();
+        }
 
         if (amount == 0) revert ZeroLiquidity();
 
@@ -285,55 +254,35 @@ contract ZoneXPool is IZoneXPool {
         if (amount0 > 0) balance0Before = balance0();
         if (amount1 > 0) balance1Before = balance1();
 
-        IZoneXMintCallback(msg.sender).zoneXMintCallback(
-            amount0,
-            amount1,
-            data
-        );
+        IZoneXMintCallback(msg.sender).zoneXMintCallback(amount0, amount1, data);
 
-        if (amount0 > 0 && balance0Before + amount0 > balance0())
+        if (amount0 > 0 && balance0Before + amount0 > balance0()) {
             revert InsufficientInputAmount();
+        }
 
-        if (amount1 > 0 && balance1Before + amount1 > balance1())
+        if (amount1 > 0 && balance1Before + amount1 > balance1()) {
             revert InsufficientInputAmount();
+        }
 
-        emit Mint(
-            msg.sender,
-            owner,
-            lowerTick,
-            upperTick,
-            amount,
-            amount0,
-            amount1
-        );
+        emit Mint(msg.sender, owner, lowerTick, upperTick, amount, amount0, amount1);
     }
 
-    function burn(
-        int24 lowerTick,
-        int24 upperTick,
-        uint128 amount
-    ) public returns (uint256 amount0, uint256 amount1) {
-        (
-            Position.Info storage position,
-            int256 amount0Int,
-            int256 amount1Int
-        ) = _modifyPosition(
-                ModifyPositionParams({
-                    owner: msg.sender,
-                    lowerTick: lowerTick,
-                    upperTick: upperTick,
-                    liquidityDelta: -(int128(amount))
-                })
-            );
+    function burn(int24 lowerTick, int24 upperTick, uint128 amount) public returns (uint256 amount0, uint256 amount1) {
+        (Position.Info storage position, int256 amount0Int, int256 amount1Int) = _modifyPosition(
+            ModifyPositionParams({
+                owner: msg.sender,
+                lowerTick: lowerTick,
+                upperTick: upperTick,
+                liquidityDelta: -(int128(amount))
+            })
+        );
 
         amount0 = uint256(-amount0Int);
         amount1 = uint256(-amount1Int);
 
         if (amount0 > 0 || amount1 > 0) {
-            (position.tokensOwed0, position.tokensOwed1) = (
-                position.tokensOwed0 + uint128(amount0),
-                position.tokensOwed1 + uint128(amount1)
-            );
+            (position.tokensOwed0, position.tokensOwed1) =
+                (position.tokensOwed0 + uint128(amount0), position.tokensOwed1 + uint128(amount1));
         }
 
         emit Burn(msg.sender, lowerTick, upperTick, amount, amount0, amount1);
@@ -346,18 +295,10 @@ contract ZoneXPool is IZoneXPool {
         uint128 amount0Requested,
         uint128 amount1Requested
     ) public returns (uint128 amount0, uint128 amount1) {
-        Position.Info memory position = positions.get(
-            msg.sender,
-            lowerTick,
-            upperTick
-        );
+        Position.Info memory position = positions.get(msg.sender, lowerTick, upperTick);
 
-        amount0 = amount0Requested > position.tokensOwed0
-            ? position.tokensOwed0
-            : amount0Requested;
-        amount1 = amount1Requested > position.tokensOwed1
-            ? position.tokensOwed1
-            : amount1Requested;
+        amount0 = amount0Requested > position.tokensOwed0 ? position.tokensOwed0 : amount0Requested;
+        amount1 = amount1Requested > position.tokensOwed1 ? position.tokensOwed1 : amount1Requested;
 
         if (amount0 > 0) {
             position.tokensOwed0 -= amount0;
@@ -369,14 +310,7 @@ contract ZoneXPool is IZoneXPool {
             IERC20(token1).transfer(recipient, amount1);
         }
 
-        emit Collect(
-            msg.sender,
-            recipient,
-            lowerTick,
-            upperTick,
-            amount0,
-            amount1
-        );
+        emit Collect(msg.sender, recipient, lowerTick, upperTick, amount0, amount1);
     }
 
     function swap(
@@ -392,10 +326,8 @@ contract ZoneXPool is IZoneXPool {
 
         if (
             zeroForOne
-                ? sqrtPriceLimitX96 > slot0_.sqrtPriceX96 ||
-                    sqrtPriceLimitX96 < TickMath.MIN_SQRT_RATIO
-                : sqrtPriceLimitX96 < slot0_.sqrtPriceX96 ||
-                    sqrtPriceLimitX96 > TickMath.MAX_SQRT_RATIO
+                ? sqrtPriceLimitX96 > slot0_.sqrtPriceX96 || sqrtPriceLimitX96 < TickMath.MIN_SQRT_RATIO
+                : sqrtPriceLimitX96 < slot0_.sqrtPriceX96 || sqrtPriceLimitX96 > TickMath.MAX_SQRT_RATIO
         ) revert InvalidPriceLimit();
 
         SwapState memory state = SwapState({
@@ -403,41 +335,23 @@ contract ZoneXPool is IZoneXPool {
             amountCalculated: 0,
             sqrtPriceX96: slot0_.sqrtPriceX96,
             tick: slot0_.tick,
-            feeGrowthGlobalX128: zeroForOne
-                ? feeGrowthGlobal0X128
-                : feeGrowthGlobal1X128,
+            feeGrowthGlobalX128: zeroForOne ? feeGrowthGlobal0X128 : feeGrowthGlobal1X128,
             liquidity: liquidity_
         });
 
-        while (
-            state.amountSpecifiedRemaining > 0 &&
-            state.sqrtPriceX96 != sqrtPriceLimitX96
-        ) {
+        while (state.amountSpecifiedRemaining > 0 && state.sqrtPriceX96 != sqrtPriceLimitX96) {
             StepState memory step;
 
             step.sqrtPriceStartX96 = state.sqrtPriceX96;
 
-            (step.nextTick, step.initialized) = tickBitmap
-                .nextInitializedTickWithinOneWord(
-                    state.tick,
-                    int24(tickSpacing),
-                    zeroForOne
-                );
+            (step.nextTick, step.initialized) =
+                tickBitmap.nextInitializedTickWithinOneWord(state.tick, int24(tickSpacing), zeroForOne);
 
             step.sqrtPriceNextX96 = TickMath.getSqrtRatioAtTick(step.nextTick);
 
-            (
+            (state.sqrtPriceX96, step.amountIn, step.amountOut, step.feeAmount) = SwapMath.computeSwapStep(
                 state.sqrtPriceX96,
-                step.amountIn,
-                step.amountOut,
-                step.feeAmount
-            ) = SwapMath.computeSwapStep(
-                state.sqrtPriceX96,
-                (
-                    zeroForOne
-                        ? step.sqrtPriceNextX96 < sqrtPriceLimitX96
-                        : step.sqrtPriceNextX96 > sqrtPriceLimitX96
-                )
+                (zeroForOne ? step.sqrtPriceNextX96 < sqrtPriceLimitX96 : step.sqrtPriceNextX96 > sqrtPriceLimitX96)
                     ? sqrtPriceLimitX96
                     : step.sqrtPriceNextX96,
                 state.liquidity,
@@ -449,35 +363,20 @@ contract ZoneXPool is IZoneXPool {
             state.amountCalculated += step.amountOut;
 
             if (state.liquidity > 0) {
-                state.feeGrowthGlobalX128 += PRBMath.mulDiv(
-                    step.feeAmount,
-                    FixedPoint128.Q128,
-                    state.liquidity
-                );
+                state.feeGrowthGlobalX128 += PRBMath.mulDiv(step.feeAmount, FixedPoint128.Q128, state.liquidity);
             }
 
             if (state.sqrtPriceX96 == step.sqrtPriceNextX96) {
                 if (step.initialized) {
                     int128 liquidityDelta = ticks.cross(
                         step.nextTick,
-                        (
-                            zeroForOne
-                                ? state.feeGrowthGlobalX128
-                                : feeGrowthGlobal0X128
-                        ),
-                        (
-                            zeroForOne
-                                ? feeGrowthGlobal1X128
-                                : state.feeGrowthGlobalX128
-                        )
+                        (zeroForOne ? state.feeGrowthGlobalX128 : feeGrowthGlobal0X128),
+                        (zeroForOne ? feeGrowthGlobal1X128 : state.feeGrowthGlobalX128)
                     );
 
                     if (zeroForOne) liquidityDelta = -liquidityDelta;
 
-                    state.liquidity = LiquidityMath.addLiquidity(
-                        state.liquidity,
-                        liquidityDelta
-                    );
+                    state.liquidity = LiquidityMath.addLiquidity(state.liquidity, liquidityDelta);
 
                     if (state.liquidity == 0) revert NotEnoughLiquidity();
                 }
@@ -489,28 +388,16 @@ contract ZoneXPool is IZoneXPool {
         }
 
         if (state.tick != slot0_.tick) {
-            (
-                uint16 observationIndex,
-                uint16 observationCardinality
-            ) = observations.write(
-                    slot0_.observationIndex,
-                    _blockTimestamp(),
-                    slot0_.tick,
-                    slot0_.observationCardinality,
-                    slot0_.observationCardinalityNext
-                );
-
-            (
-                slot0.sqrtPriceX96,
-                slot0.tick,
-                slot0.observationIndex,
-                slot0.observationCardinality
-            ) = (
-                state.sqrtPriceX96,
-                state.tick,
-                observationIndex,
-                observationCardinality
+            (uint16 observationIndex, uint16 observationCardinality) = observations.write(
+                slot0_.observationIndex,
+                _blockTimestamp(),
+                slot0_.tick,
+                slot0_.observationCardinality,
+                slot0_.observationCardinalityNext
             );
+
+            (slot0.sqrtPriceX96, slot0.tick, slot0.observationIndex, slot0.observationCardinality) =
+                (state.sqrtPriceX96, state.tick, observationIndex, observationCardinality);
         } else {
             slot0.sqrtPriceX96 = state.sqrtPriceX96;
         }
@@ -524,55 +411,31 @@ contract ZoneXPool is IZoneXPool {
         }
 
         (amount0, amount1) = zeroForOne
-            ? (
-                int256(amountSpecified - state.amountSpecifiedRemaining),
-                -int256(state.amountCalculated)
-            )
-            : (
-                -int256(state.amountCalculated),
-                int256(amountSpecified - state.amountSpecifiedRemaining)
-            );
+            ? (int256(amountSpecified - state.amountSpecifiedRemaining), -int256(state.amountCalculated))
+            : (-int256(state.amountCalculated), int256(amountSpecified - state.amountSpecifiedRemaining));
 
         if (zeroForOne) {
             IERC20(token1).transfer(recipient, uint256(-amount1));
 
             uint256 balance0Before = balance0();
-            IZoneXSwapCallback(msg.sender).zoneXSwapCallback(
-                amount0,
-                amount1,
-                data
-            );
-            if (balance0Before + uint256(amount0) > balance0())
+            IZoneXSwapCallback(msg.sender).zoneXSwapCallback(amount0, amount1, data);
+            if (balance0Before + uint256(amount0) > balance0()) {
                 revert InsufficientInputAmount();
+            }
         } else {
             IERC20(token0).transfer(recipient, uint256(-amount0));
 
             uint256 balance1Before = balance1();
-            IZoneXSwapCallback(msg.sender).zoneXSwapCallback(
-                amount0,
-                amount1,
-                data
-            );
-            if (balance1Before + uint256(amount1) > balance1())
+            IZoneXSwapCallback(msg.sender).zoneXSwapCallback(amount0, amount1, data);
+            if (balance1Before + uint256(amount1) > balance1()) {
                 revert InsufficientInputAmount();
+            }
         }
 
-        emit Swap(
-            msg.sender,
-            recipient,
-            amount0,
-            amount1,
-            slot0.sqrtPriceX96,
-            state.liquidity,
-            slot0.tick
-        );
+        emit Swap(msg.sender, recipient, amount0, amount1, slot0.sqrtPriceX96, state.liquidity, slot0.tick);
     }
 
-    function flash(
-        uint256 amount0,
-        uint256 amount1,
-        bytes calldata data
-    ) public {
+    function flash(uint256 amount0, uint256 amount1, bytes calldata data) public {
         uint256 fee0 = Math.mulDivRoundingUp(amount0, fee, 1e6);
         uint256 fee1 = Math.mulDivRoundingUp(amount1, fee, 1e6);
 
@@ -584,42 +447,30 @@ contract ZoneXPool is IZoneXPool {
 
         IZoneXFlashCallback(msg.sender).zoneXFlashCallback(fee0, fee1, data);
 
-        if (IERC20(token0).balanceOf(address(this)) < balance0Before + fee0)
+        if (IERC20(token0).balanceOf(address(this)) < balance0Before + fee0) {
             revert FlashLoanNotPaid();
-        if (IERC20(token1).balanceOf(address(this)) < balance1Before + fee1)
+        }
+        if (IERC20(token1).balanceOf(address(this)) < balance1Before + fee1) {
             revert FlashLoanNotPaid();
+        }
 
         emit Flash(msg.sender, amount0, amount1);
     }
 
-    function observe(
-        uint32[] calldata secondsAgos
-    ) public view returns (int56[] memory tickCumulatives) {
-        return
-            observations.observe(
-                _blockTimestamp(),
-                secondsAgos,
-                slot0.tick,
-                slot0.observationIndex,
-                slot0.observationCardinality
-            );
+    function observe(uint32[] calldata secondsAgos) public view returns (int56[] memory tickCumulatives) {
+        return observations.observe(
+            _blockTimestamp(), secondsAgos, slot0.tick, slot0.observationIndex, slot0.observationCardinality
+        );
     }
 
-    function increaseObservationCardinalityNext(
-        uint16 observationCardinalityNext
-    ) public {
+    function increaseObservationCardinalityNext(uint16 observationCardinalityNext) public {
         uint16 observationCardinalityNextOld = slot0.observationCardinalityNext;
-        uint16 observationCardinalityNextNew = observations.grow(
-            observationCardinalityNextOld,
-            observationCardinalityNext
-        );
+        uint16 observationCardinalityNextNew =
+            observations.grow(observationCardinalityNextOld, observationCardinalityNext);
 
         if (observationCardinalityNextNew != observationCardinalityNextOld) {
             slot0.observationCardinalityNext = observationCardinalityNextNew;
-            emit IncreaseObservationCardinalityNext(
-                observationCardinalityNextOld,
-                observationCardinalityNextNew
-            );
+            emit IncreaseObservationCardinalityNext(observationCardinalityNextOld, observationCardinalityNextNew);
         }
     }
 

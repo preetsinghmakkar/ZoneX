@@ -8,9 +8,7 @@ import "../../src/lib/TickMath.sol";
 contract MathTest is Test {
     function testCalcAmount0Delta() public pure {
         int256 amount0 = Math.calcAmount0Delta(
-            TickMath.getSqrtRatioAtTick(85176),
-            TickMath.getSqrtRatioAtTick(86129),
-            int128(1517882343751509868544)
+            TickMath.getSqrtRatioAtTick(85176), TickMath.getSqrtRatioAtTick(86129), int128(1517882343751509868544)
         );
 
         assertEq(amount0, 0.998833192822975409 ether);
@@ -18,9 +16,7 @@ contract MathTest is Test {
 
     function testCalcAmount1Delta() public pure {
         int256 amount1 = Math.calcAmount1Delta(
-            TickMath.getSqrtRatioAtTick(84222),
-            TickMath.getSqrtRatioAtTick(85176),
-            int128(1517882343751509868544)
+            TickMath.getSqrtRatioAtTick(84222), TickMath.getSqrtRatioAtTick(85176), int128(1517882343751509868544)
         );
 
         assertEq(amount1, 4999.187247111820044641 ether);
@@ -28,9 +24,7 @@ contract MathTest is Test {
 
     function testCalcAmount0DeltaNegative() public pure {
         int256 amount0 = Math.calcAmount0Delta(
-            TickMath.getSqrtRatioAtTick(85176),
-            TickMath.getSqrtRatioAtTick(86129),
-            int128(-1517882343751509868544)
+            TickMath.getSqrtRatioAtTick(85176), TickMath.getSqrtRatioAtTick(86129), int128(-1517882343751509868544)
         );
 
         assertEq(amount0, -0.998833192822975408 ether);
@@ -38,11 +32,9 @@ contract MathTest is Test {
 
     function testCalcAmount1DeltaNegative() public pure {
         int256 amount1 = Math.calcAmount1Delta(
-            TickMath.getSqrtRatioAtTick(84222),
-            TickMath.getSqrtRatioAtTick(85176),
-            int128(-1517882343751509868544)
+            TickMath.getSqrtRatioAtTick(84222), TickMath.getSqrtRatioAtTick(85176), int128(-1517882343751509868544)
         );
 
-        assertEq(amount1, -4999.187247111820044640 ether);
+        assertEq(amount1, -4999.18724711182004464 ether);
     }
 }

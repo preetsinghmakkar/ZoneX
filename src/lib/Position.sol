@@ -15,15 +15,12 @@ library Position {
         uint128 tokensOwed1;
     }
 
-    function get(
-        mapping(bytes32 => Info) storage self,
-        address owner,
-        int24 lowerTick,
-        int24 upperTick
-    ) internal view returns (Position.Info storage position) {
-        position = self[
-            keccak256(abi.encodePacked(owner, lowerTick, upperTick))
-        ];
+    function get(mapping(bytes32 => Info) storage self, address owner, int24 lowerTick, int24 upperTick)
+        internal
+        view
+        returns (Position.Info storage position)
+    {
+        position = self[keccak256(abi.encodePacked(owner, lowerTick, upperTick))];
     }
 
     function update(
@@ -33,24 +30,13 @@ library Position {
         uint256 feeGrowthInside1X128
     ) internal {
         uint128 tokensOwed0 = uint128(
-            PRBMath.mulDiv(
-                feeGrowthInside0X128 - self.feeGrowthInside0LastX128,
-                self.liquidity,
-                FixedPoint128.Q128
-            )
+            PRBMath.mulDiv(feeGrowthInside0X128 - self.feeGrowthInside0LastX128, self.liquidity, FixedPoint128.Q128)
         );
         uint128 tokensOwed1 = uint128(
-            PRBMath.mulDiv(
-                feeGrowthInside1X128 - self.feeGrowthInside1LastX128,
-                self.liquidity,
-                FixedPoint128.Q128
-            )
+            PRBMath.mulDiv(feeGrowthInside1X128 - self.feeGrowthInside1LastX128, self.liquidity, FixedPoint128.Q128)
         );
 
-        self.liquidity = LiquidityMath.addLiquidity(
-            self.liquidity,
-            liquidityDelta
-        );
+        self.liquidity = LiquidityMath.addLiquidity(self.liquidity, liquidityDelta);
         self.feeGrowthInside0LastX128 = feeGrowthInside0X128;
         self.feeGrowthInside1LastX128 = feeGrowthInside1X128;
 
